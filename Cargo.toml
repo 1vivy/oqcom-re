@@ -13,8 +13,13 @@ path = "src/lib.rs"
 name = "oqcom-re"
 path = "src/main.rs"
 
+[workspace]
+members = ["crates/oqcom-re-host"]
+resolver = "3"
+
 [dependencies]
 forms = { git = "https://github.com/1vivy/forms", rev = "910df3fc34855f37379005abdd322dbc615c4b0b" }
+oqcom-re-host = { path = "crates/oqcom-re-host" }
 
 [target.'cfg(target_os = "uefi")'.dependencies]
 forms-tui = { git = "https://github.com/1vivy/forms", rev = "910df3fc34855f37379005abdd322dbc615c4b0b" }

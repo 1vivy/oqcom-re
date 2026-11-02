@@ -242,11 +242,16 @@ dependencies = [
  "forms",
  "forms-tui",
  "hii-uefi",
+ "oqcom-re-host",
  "ratatui-core",
  "ratatui-gop",
  "uefi",
  "uefi-raw",
 ]
+
+[[package]]
+name = "oqcom-re-host"
+version = "0.1.0"
 
 [[package]]
 name = "proc-macro2"

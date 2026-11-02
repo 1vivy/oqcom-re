@@ -22,8 +22,16 @@
 //!
 //! - `OQCOM_RE_FORMSET title=<title>` for each formset that it found.
 //! - `OQCOM_RE_READY formsets=<n>` after the first frame is drawn.
+//! - `OQCOM_RE_HOST_YIELD` when the caller asked for the screen back.
 //! - `OQCOM_RE_EXIT` when it leaves.
 //! - `OQCOM_RE_ERROR reason=<reason>` when a step fails.
+//!
+//! # Host protocol
+//!
+//! A caller can publish `oqcom_re_host::Protocol` before it starts this
+//! application. The program polls it at the top of every input-loop turn,
+//! also while no key waits, and returns to the caller when the protocol asks
+//! for the screen. Without the protocol the program runs alone.
 //!
 //! # Keys
 //!
@@ -66,6 +74,7 @@ mod app {
     use forms_tui::FormsWidget;
     use hii_uefi::hii::HiiProvider;
     use hii_uefi::raw::Boot;
+    use oqcom_re::host::{Disposition, Host};
     use oqcom_re::input::Keys;
     use oqcom_re::terminal::TextBackend;
     use ratatui_core::terminal::Terminal;
@@ -75,6 +84,10 @@ mod app {
     use uefi::proto::console::text::Output;
     use uefi_raw::protocol::console::serial::SerialIoProtocol;
     use uefi_raw::table::system::SystemTable;
+
+    /// How long one idle turn waits before it polls the host and the console
+    /// again, in microseconds.
+    const IDLE_DELAY: usize = 10_000;
 
     /// The application entry point. StartImage returns when this returns.
     pub fn main() {
@@ -103,6 +116,16 @@ mod app {
 
     /// Lists the formsets, draws them and handles key strokes.
     fn run(boot: Boot, log: &Log) -> Result<(), String> {
+        let mut host = match Host::locate(boot) {
+            Ok(host) => host,
+            Err(reason) => {
+                // An interface that this program does not understand is
+                // reported, and the session ends instead of claiming access.
+                log.line(&format!("OQCOM_RE_ERROR reason={reason}"));
+                log.line("OQCOM_RE_EXIT");
+                return Ok(());
+            }
+        };
         let mut provider =
             HiiProvider::new(boot).map_err(|error| format!("cannot open HII: {}", error.reason))?;
         let sets = provider
@@ -137,7 +160,27 @@ mod app {
         drawing.draw(&view)?;
         log.line(&format!("OQCOM_RE_READY formsets={count}"));
         loop {
-            let input = keys.read();
+            // The caller goes first: a request for the screen wins over a key
+            // stroke that already waits in the console queue.
+            if let Some(host) = host.as_mut() {
+                match host.poll() {
+                    Ok(Disposition::Yield) => {
+                        log.line("OQCOM_RE_HOST_YIELD");
+                        break;
+                    }
+                    Ok(Disposition::Idle) => {}
+                    Err(reason) => {
+                        log.line(&format!("OQCOM_RE_ERROR reason={reason}"));
+                        log.line("OQCOM_RE_EXIT");
+                        log.console.set(true);
+                        return Ok(());
+                    }
+                }
+            }
+            let Some(input) = keys.try_read() else {
+                boot.stall(IDLE_DELAY);
+                continue;
+            };
             match session.input(input, &mut provider) {
                 Event::Exit => break,
                 Event::Failed(error) => {
