@@ -50,6 +50,15 @@ the console, except while the session draws on the screen:
 | `OQCOM_RE_READY formsets=<n>` | The first frame is drawn |
 | `OQCOM_RE_EXIT` | The session ended; the application returns to its caller |
 | `OQCOM_RE_ERROR reason=<reason>` | A step failed |
+| `OQCOM_RE_FOCUS formset=<GUID>` | The load options named this formset; the session opened it |
+
+## Load options
+
+`--formset <GUID>` opens one formset directly and pins it, as
+`FormBrowser2.SendForm` does: Back on its entry form ends the application. A
+firmware owner uses it for one question, for example a consent prompt. When no
+formset with that GUID is published, the application logs `OQCOM_RE_ERROR` and
+`OQCOM_RE_EXIT` and returns at once, instead of showing the list.
 
 ## Test on QEMU
 

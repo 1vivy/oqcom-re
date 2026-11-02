@@ -116,6 +116,14 @@ mod app {
         }
         let count = sets.len();
         let mut session = Session::new(sets);
+        if let Some(guid) = load_options_formset()? {
+            if !session.enter(&guid) {
+                // A caller that names one formset wants that question, not the list.
+                log.line("OQCOM_RE_EXIT");
+                return Err(format!("formset {} is not published", guid_text(&guid)));
+            }
+            log.line(&format!("OQCOM_RE_FOCUS formset={}", guid_text(&guid)));
+        }
         let mut drawing = Drawing::open()?;
         // From here the session owns the screen: markers go to the serial port only.
         log.console.set(false);
@@ -150,6 +158,34 @@ mod app {
         log.console.set(true);
         log.line("OQCOM_RE_EXIT");
         Ok(())
+    }
+
+    /// Reads `--formset <GUID>` from this image's load options.
+    fn load_options_formset() -> Result<Option<forms::Guid>, String> {
+        let image = uefi::boot::open_protocol_exclusive::<uefi::proto::loaded_image::LoadedImage>(
+            uefi::boot::image_handle(),
+        )
+        .map_err(|error| format!("cannot open LoadedImage: {error:?}"))?;
+        // Absent or non-UTF-16 load options name no formset.
+        let Ok(options) = image.load_options_as_cstr16() else {
+            return Ok(None);
+        };
+        oqcom_re::options::formset(&options.to_string()).map_err(|error| format!("{error:?}"))
+    }
+
+    /// Formats a GUID in registry form from its UEFI byte order.
+    fn guid_text(guid: &forms::Guid) -> String {
+        let a = u32::from_le_bytes([guid[0], guid[1], guid[2], guid[3]]);
+        let b = u16::from_le_bytes([guid[4], guid[5]]);
+        let c = u16::from_le_bytes([guid[6], guid[7]]);
+        let tail: String = guid[10..]
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        format!(
+            "{a:08x}-{b:04x}-{c:04x}-{:02x}{:02x}-{tail}",
+            guid[8], guid[9]
+        )
     }
 
     /// The drawing surface: GOP when available, else the text console.
