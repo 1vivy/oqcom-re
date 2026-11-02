@@ -119,8 +119,12 @@ mod app {
         if let Some(guid) = load_options_formset()? {
             if !session.enter(&guid) {
                 // A caller that names one formset wants that question, not the list.
+                log.line(&format!(
+                    "OQCOM_RE_ERROR reason=formset {} is not published",
+                    guid_text(&guid)
+                ));
                 log.line("OQCOM_RE_EXIT");
-                return Err(format!("formset {} is not published", guid_text(&guid)));
+                return Ok(());
             }
             log.line(&format!("OQCOM_RE_FOCUS formset={}", guid_text(&guid)));
         }
