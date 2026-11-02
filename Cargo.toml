@@ -1,0 +1,39 @@
+[package]
+name = "oqcom-re"
+description = "A recovery environment for UEFI systems: every HII formset as a setup page"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+
+[lib]
+name = "oqcom_re"
+path = "src/lib.rs"
+
+[[bin]]
+name = "oqcom-re"
+path = "src/main.rs"
+
+[dependencies]
+forms = { git = "https://github.com/1vivy/forms", rev = "e383641c6d34bb33e3909e609312b6db8f883562" }
+
+[target.'cfg(target_os = "uefi")'.dependencies]
+forms-tui = { git = "https://github.com/1vivy/forms", rev = "e383641c6d34bb33e3909e609312b6db8f883562" }
+ratatui-gop = { git = "https://github.com/1vivy/forms", rev = "e383641c6d34bb33e3909e609312b6db8f883562" }
+hii-uefi = { git = "https://github.com/1vivy/forms", rev = "e383641c6d34bb33e3909e609312b6db8f883562" }
+ratatui-core = { version = "0.1.2", default-features = false }
+uefi = { version = "0.41.0", default-features = false }
+uefi-raw = "0.17.0"
+
+[lints.rust]
+missing_docs = "deny"
+unsafe_op_in_unsafe_fn = "deny"
+unused_must_use = "deny"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+undocumented_unsafe_blocks = "deny"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
