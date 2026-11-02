@@ -104,12 +104,12 @@ checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
 [[package]]
 name = "forms"
 version = "0.1.0"
-source = "git+https://github.com/1vivy/forms?rev=9adea191da6418c76f2e9530e7f2b3b4646c5672#9adea191da6418c76f2e9530e7f2b3b4646c5672"
+source = "git+https://github.com/1vivy/forms?rev=910df3fc34855f37379005abdd322dbc615c4b0b#910df3fc34855f37379005abdd322dbc615c4b0b"
 
 [[package]]
 name = "forms-tui"
 version = "0.1.0"
-source = "git+https://github.com/1vivy/forms?rev=9adea191da6418c76f2e9530e7f2b3b4646c5672#9adea191da6418c76f2e9530e7f2b3b4646c5672"
+source = "git+https://github.com/1vivy/forms?rev=910df3fc34855f37379005abdd322dbc615c4b0b#910df3fc34855f37379005abdd322dbc615c4b0b"
 dependencies = [
  "forms",
  "ratatui-core",
@@ -136,12 +136,12 @@ checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 [[package]]
 name = "hii-abi"
 version = "0.1.0"
-source = "git+https://github.com/1vivy/forms?rev=9adea191da6418c76f2e9530e7f2b3b4646c5672#9adea191da6418c76f2e9530e7f2b3b4646c5672"
+source = "git+https://github.com/1vivy/forms?rev=910df3fc34855f37379005abdd322dbc615c4b0b#910df3fc34855f37379005abdd322dbc615c4b0b"
 
 [[package]]
 name = "hii-ifr"
 version = "0.1.0"
-source = "git+https://github.com/1vivy/forms?rev=9adea191da6418c76f2e9530e7f2b3b4646c5672#9adea191da6418c76f2e9530e7f2b3b4646c5672"
+source = "git+https://github.com/1vivy/forms?rev=910df3fc34855f37379005abdd322dbc615c4b0b#910df3fc34855f37379005abdd322dbc615c4b0b"
 dependencies = [
  "forms",
  "hii-abi",
@@ -150,7 +150,7 @@ dependencies = [
 [[package]]
 name = "hii-uefi"
 version = "0.1.0"
-source = "git+https://github.com/1vivy/forms?rev=9adea191da6418c76f2e9530e7f2b3b4646c5672#9adea191da6418c76f2e9530e7f2b3b4646c5672"
+source = "git+https://github.com/1vivy/forms?rev=910df3fc34855f37379005abdd322dbc615c4b0b#910df3fc34855f37379005abdd322dbc615c4b0b"
 dependencies = [
  "forms",
  "hii-abi",
@@ -308,7 +308,7 @@ dependencies = [
 [[package]]
 name = "ratatui-gop"
 version = "0.1.0"
-source = "git+https://github.com/1vivy/forms?rev=9adea191da6418c76f2e9530e7f2b3b4646c5672#9adea191da6418c76f2e9530e7f2b3b4646c5672"
+source = "git+https://github.com/1vivy/forms?rev=910df3fc34855f37379005abdd322dbc615c4b0b#910df3fc34855f37379005abdd322dbc615c4b0b"
 dependencies = [
  "ratatui-core",
  "uefi",

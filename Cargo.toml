@@ -14,12 +14,12 @@ name = "oqcom-re"
 path = "src/main.rs"
 
 [dependencies]
-forms = { git = "https://github.com/1vivy/forms", rev = "9adea191da6418c76f2e9530e7f2b3b4646c5672" }
+forms = { git = "https://github.com/1vivy/forms", rev = "910df3fc34855f37379005abdd322dbc615c4b0b" }
 
 [target.'cfg(target_os = "uefi")'.dependencies]
-forms-tui = { git = "https://github.com/1vivy/forms", rev = "9adea191da6418c76f2e9530e7f2b3b4646c5672" }
-ratatui-gop = { git = "https://github.com/1vivy/forms", rev = "9adea191da6418c76f2e9530e7f2b3b4646c5672" }
-hii-uefi = { git = "https://github.com/1vivy/forms", rev = "9adea191da6418c76f2e9530e7f2b3b4646c5672" }
+forms-tui = { git = "https://github.com/1vivy/forms", rev = "910df3fc34855f37379005abdd322dbc615c4b0b" }
+ratatui-gop = { git = "https://github.com/1vivy/forms", rev = "910df3fc34855f37379005abdd322dbc615c4b0b" }
+hii-uefi = { git = "https://github.com/1vivy/forms", rev = "910df3fc34855f37379005abdd322dbc615c4b0b" }
 ratatui-core = { version = "0.1.2", default-features = false }
 uefi = { version = "0.41.0", default-features = false }
 uefi-raw = "0.17.0"
