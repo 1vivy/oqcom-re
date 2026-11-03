@@ -274,7 +274,10 @@ mod app {
             let Ok(gop) = uefi::boot::open_protocol_exclusive::<GraphicsOutput>(handle) else {
                 return Ok(None);
             };
-            let Ok(backend) = GopBackend::new(gop, None) else {
+            // The panel hides its top edge and rounds its bottom corners; the
+            // margins follow the live mode height, never a fixed geometry.
+            let height = gop.current_mode_info().resolution().1;
+            let Ok(backend) = GopBackend::with_insets(gop, None, height * 46 / 1000, 4) else {
                 return Ok(None);
             };
             let terminal =

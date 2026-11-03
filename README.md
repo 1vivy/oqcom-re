@@ -38,9 +38,19 @@ and with the firmware text console otherwise.
 Input uses the inherited `ConIn` handle and interface, not the first global
 keyboard protocol. Output uses the inherited `ConOut` handle.
 
+The graphics grid starts below the top edge of the panel and ends four physical
+pixels above its bottom edge. The top margin is 46/1000 of the live mode height,
+which is 127 pixels on the 2772-pixel panel, so the application stores no fixed
+panel geometry. The application supplies these margins to the graphics backend
+in physical pixels.
+
 Navigation redraws the page without re-enumerating HII. A provider's Refresh
 response reloads its formsets. A provider's Exit response ends the application
 so the lifecycle can execute the selected action.
+
+Up and Down wrap at both ends of the rows, and a choice editor ends with a
+`< Back` row. A phone with volume and power keys alone reaches every row and
+cancels an editor without an Esc key.
 
 | Key | Action |
 | --- | --- |

@@ -24,6 +24,9 @@ cargo +1.95.0 test -p oqcom-re-host
 - By default, the application lists every HII formset without a GUID or class filter.
 - `--formset <GUID>` opens one formset. Back on its entry form returns to the caller.
 - Keep the visible Back row available for phones with only volume and power keys.
+- Derive the graphics safe area from the live GOP mode: a top margin of 46/1000
+  of the mode height and four physical pixels at the bottom. Never store a fixed
+  panel geometry, and keep render and clear offsets equal.
 - Returning from `main` returns to the caller of `StartImage`. The application
   does not reset the system and does not exit boot services; a provider
   `Response::Reset` is shown to the person.
