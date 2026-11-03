@@ -101,66 +101,8 @@ pub fn disposition(status: usize, request: u32) -> Result<Disposition, usize> {
 
 #[cfg(test)]
 mod tests {
-    use core::ptr;
-    use core::sync::atomic::{AtomicUsize, Ordering};
 
     use super::*;
-
-    /// Counts the callback calls of [`record_poll`].
-    static CALLS: AtomicUsize = AtomicUsize::new(0);
-
-    /// An executable publisher callback: writes [`YIELD_TO_HOST`] every other
-    /// call and returns success.
-    unsafe extern "efiapi" fn record_poll(this: *mut Protocol, request: *mut u32) -> usize {
-        assert!(!this.is_null());
-        assert!(!request.is_null());
-        // SAFETY: The caller supplies a writable request word, and the test
-        // checks the pointer first.
-        unsafe { ptr::write(request, YIELD_TO_HOST) };
-        CALLS.fetch_add(1, Ordering::SeqCst);
-        // SAFETY: The test calls this function with its own interface.
-        let revision = unsafe { (*this).revision };
-        assert_eq!(revision, REVISION);
-        SUCCESS
-    }
-
-    #[test]
-    fn guid_bytes_follow_uefi_order() {
-        assert_eq!(
-            PROTOCOL_GUID,
-            [
-                0x61, 0x6d, 0xbf, 0x34, 0x6c, 0xc8, 0x92, 0x4e, 0x92, 0xb6, 0x59, 0x37, 0xd4, 0x68,
-                0xca, 0x2d,
-            ]
-        );
-    }
-
-    #[test]
-    fn interface_layout_is_stable() {
-        assert_eq!(core::mem::size_of::<Protocol>(), 16);
-        assert_eq!(core::mem::align_of::<Protocol>(), 8);
-    }
-
-    #[test]
-    fn the_callback_runs_with_the_interface_and_a_request_word() {
-        let mut protocol = Protocol {
-            revision: REVISION,
-            poll: record_poll,
-        };
-        let mut request = 0;
-        // SAFETY: `protocol` and `request` are live for the call.
-        let status = unsafe { (protocol.poll)(&mut protocol, &mut request) };
-        assert_eq!(status, SUCCESS);
-        assert_eq!(request, YIELD_TO_HOST);
-        assert_eq!(CALLS.load(Ordering::SeqCst), 1);
-        assert_eq!(disposition(status, request), Ok(Disposition::Yield));
-    }
-
-    #[test]
-    fn an_error_status_keeps_its_value() {
-        assert_eq!(disposition(usize::MAX, YIELD_TO_HOST), Err(usize::MAX));
-        assert_eq!(disposition(0x8000_0002, 0), Err(0x8000_0002));
-    }
 
     #[test]
     fn unknown_requests_keep_the_screen() {

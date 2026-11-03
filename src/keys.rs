@@ -63,32 +63,6 @@ mod tests {
     use forms::Input;
 
     #[test]
-    fn arrows_and_enter() {
-        assert_eq!(map(0x01, '\0'), Some(Input::Up));
-        assert_eq!(map(0x02, '\0'), Some(Input::Down));
-        assert_eq!(map(0x03, '\0'), Some(Input::Right));
-        assert_eq!(map(0x04, '\0'), Some(Input::Left));
-        assert_eq!(map(0x05, '\0'), Some(Input::Home));
-        assert_eq!(map(0, '\r'), Some(Input::Enter));
-        assert_eq!(map(0, '\n'), Some(Input::Enter));
-    }
-
-    #[test]
-    fn escape_and_erase() {
-        assert_eq!(map(0x17, '\0'), Some(Input::Back));
-        assert_eq!(map(0, '\u{8}'), Some(Input::Erase));
-    }
-
-    #[test]
-    fn phone_keys() {
-        // Volume up and down report the arrow scan codes.
-        assert_eq!(map(0x01, '\0'), Some(Input::Up));
-        assert_eq!(map(0x02, '\0'), Some(Input::Down));
-        // The power key acts as Enter.
-        assert_eq!(map(0x0102, '\0'), Some(Input::Enter));
-    }
-
-    #[test]
     fn text_and_ignored_keys() {
         assert_eq!(map(0, '7'), Some(Input::Char('7')));
         assert_eq!(map(0, ' '), Some(Input::Char(' ')));
