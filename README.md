@@ -35,6 +35,12 @@ UEFI has no C runtime.
 
 The application draws with `ratatui-gop` when the console handle publishes GOP,
 and with the firmware text console otherwise.
+Input uses the inherited `ConIn` handle and interface, not the first global
+keyboard protocol. Output uses the inherited `ConOut` handle.
+
+Navigation redraws the page without re-enumerating HII. A provider's Refresh
+response reloads its formsets. A provider's Exit response ends the application
+so the lifecycle can execute the selected action.
 
 | Key | Action |
 | --- | --- |

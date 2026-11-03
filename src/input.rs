@@ -24,14 +24,28 @@ pub struct Keys {
 }
 
 impl Keys {
-    /// Opens the console input protocols.
+    /// Opens the inherited system console, including its extended interface.
     ///
     /// # Errors
     ///
-    /// Returns a message when the firmware publishes neither input protocol.
+    /// Returns a message when the system table or its console is unavailable.
     pub fn open(boot: Boot) -> Result<Self, String> {
-        let extended = boot.locate::<SimpleTextInputExProtocol>(&SimpleTextInputExProtocol::GUID);
-        let basic = boot.locate::<SimpleTextInputProtocol>(&SimpleTextInputProtocol::GUID);
+        let raw = uefi::table::system_table_raw().ok_or("the system table is unavailable")?;
+        // SAFETY: Startup initializes this pointer from the inherited system
+        // table, which stays live until this application returns.
+        let table = unsafe { raw.as_ref() };
+        let extended = if table.stdin_handle.is_null() {
+            None
+        } else {
+            // SAFETY: The system table names the live console-input handle.
+            unsafe {
+                boot.protocol::<SimpleTextInputExProtocol>(
+                    table.stdin_handle,
+                    &SimpleTextInputExProtocol::GUID,
+                )
+            }
+        };
+        let basic = NonNull::new(table.stdin);
         if extended.is_none() && basic.is_none() {
             return Err("the firmware publishes no console input protocol".to_string());
         }

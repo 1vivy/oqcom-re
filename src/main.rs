@@ -182,11 +182,11 @@ mod app {
                 continue;
             };
             match session.input(input, &mut provider) {
-                Event::Exit => break,
+                Event::Exit | Event::Response(Response::Exit) => break,
                 Event::Failed(error) => {
                     log.line(&format!("OQCOM_RE_ERROR reason={}", error.reason))
                 }
-                Event::Changed | Event::Response(Response::Refresh) => match provider.formsets() {
+                Event::Response(Response::Refresh) => match provider.formsets() {
                     Ok(sets) => {
                         session.replace(sets);
                         for problem in provider.take_problems() {
@@ -197,7 +197,7 @@ mod app {
                         log.line(&format!("OQCOM_RE_ERROR reason={}", error.reason));
                     }
                 },
-                Event::None | Event::Response(_) => {}
+                Event::None | Event::Changed | Event::Response(_) => {}
             }
             let view = session.view(&mut provider);
             drawing.draw(&view)?;
@@ -266,9 +266,7 @@ mod app {
 
         /// Opens the graphics output protocol, when the firmware has one.
         fn gop() -> Result<Option<Terminal<GopBackend>>, String> {
-            let Ok(handle) = uefi::boot::get_handle_for_protocol::<GraphicsOutput>() else {
-                return Ok(None);
-            };
+            let handle = console_output_handle()?;
             let Ok(gop) = uefi::boot::open_protocol_exclusive::<GraphicsOutput>(handle) else {
                 return Ok(None);
             };
@@ -300,10 +298,18 @@ mod app {
 
     /// Opens the firmware text console.
     fn open_text() -> Result<ScopedProtocol<Output>, String> {
-        let handle = uefi::boot::get_handle_for_protocol::<Output>()
-            .map_err(|error| format!("no text console: {error}"))?;
+        let handle = console_output_handle()?;
         uefi::boot::open_protocol_exclusive::<Output>(handle)
             .map_err(|error| format!("no text console: {error}"))
+    }
+
+    /// Returns the inherited console-output handle instead of a global device.
+    fn console_output_handle() -> Result<uefi::Handle, String> {
+        let table = uefi::table::system_table_raw().ok_or("the system table is unavailable")?;
+        // SAFETY: Startup initializes the inherited table, and its console
+        // handle stays live for this application.
+        unsafe { uefi::Handle::from_ptr(table.as_ref().stdout_handle) }
+            .ok_or_else(|| "the console output handle is unavailable".to_string())
     }
 
     /// Marker output to the serial port and, while no session draws, the console.
