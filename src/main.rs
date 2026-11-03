@@ -152,13 +152,17 @@ mod app {
             log.line(&format!("OQCOM_RE_FOCUS formset={}", guid_text(&guid)));
         }
         let mut drawing = Drawing::open()?;
-        // From here the session owns the screen: markers go to the serial port only.
+        // A dedicated serial sink leaves the frame untouched. Without one,
+        // console markers invalidate the frame and the next draw restores it.
         log.console.set(false);
         log.line(&format!("OQCOM_RE_DISPLAY backend={}", drawing.name()));
         let mut keys = Keys::open(boot)?;
         let view = session.view(&mut provider);
-        drawing.draw(&view)?;
+        drawing.draw(&view, log)?;
         log.line(&format!("OQCOM_RE_READY formsets={count}"));
+        if log.dirty.get() {
+            drawing.draw(&view, log)?;
+        }
         loop {
             // The caller goes first: a request for the screen wins over a key
             // stroke that already waits in the console queue.
@@ -200,7 +204,7 @@ mod app {
                 Event::None | Event::Changed | Event::Response(_) => {}
             }
             let view = session.view(&mut provider);
-            drawing.draw(&view)?;
+            drawing.draw(&view, log)?;
         }
         log.console.set(true);
         log.line("OQCOM_RE_EXIT");
@@ -279,7 +283,13 @@ mod app {
         }
 
         /// Draws one view.
-        fn draw(&mut self, view: &View) -> Result<(), String> {
+        fn draw(&mut self, view: &View, log: &Log) -> Result<(), String> {
+            if log.dirty.replace(false) {
+                match self {
+                    Self::Gop(terminal) => terminal.clear().map_err(|error| error.to_string()),
+                    Self::Text(terminal) => terminal.clear().map_err(|error| error.to_string()),
+                }?;
+            }
             let paint = |frame: &mut ratatui_core::terminal::Frame| {
                 frame.render_widget(FormsWidget::new(view), frame.area());
             };
@@ -312,11 +322,13 @@ mod app {
             .ok_or_else(|| "the console output handle is unavailable".to_string())
     }
 
-    /// Marker output to the serial port and, while no session draws, the console.
+    /// Marker output with frame invalidation when only console output exists.
     struct Log {
         serial: Option<NonNull<SerialIoProtocol>>,
-        /// The console receives markers only while the session does not own the screen.
+        /// Whether markers may use the console without invalidating a frame.
         console: std::cell::Cell<bool>,
+        /// A console marker overwrote a frame and the next draw must clear it.
+        dirty: std::cell::Cell<bool>,
     }
 
     impl Log {
@@ -325,10 +337,11 @@ mod app {
             Self {
                 serial: boot.locate::<SerialIoProtocol>(&SerialIoProtocol::GUID),
                 console: std::cell::Cell::new(true),
+                dirty: std::cell::Cell::new(false),
             }
         }
 
-        /// Writes one line to the serial port, and to the console when it is free.
+        /// Writes a marker and records whether console output disturbed a frame.
         fn line(&self, text: &str) {
             let mut line = String::from(text);
             line.push_str("\r\n");
@@ -340,10 +353,13 @@ mod app {
                     let _ = (serial.as_ref().write)(serial.as_ptr(), &mut size, line.as_ptr());
                 }
             }
-            if self.console.get() {
+            if self.console.get() || self.serial.is_none() {
                 print!("{line}");
                 use std::io::Write;
                 let _ = std::io::stdout().flush();
+                if !self.console.get() {
+                    self.dirty.set(true);
+                }
             }
         }
     }

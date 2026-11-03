@@ -18,13 +18,13 @@ members = ["crates/oqcom-re-host"]
 resolver = "3"
 
 [dependencies]
-forms = { git = "https://github.com/1vivy/forms", rev = "3aab20bfab732dbe456ffbe9ca03ba8a904b702f" }
+forms = { git = "https://github.com/1vivy/forms", rev = "8467fd047ac716179905e980dd582f17d83cc8df" }
 oqcom-re-host = { path = "crates/oqcom-re-host" }
 
 [target.'cfg(target_os = "uefi")'.dependencies]
-forms-tui = { git = "https://github.com/1vivy/forms", rev = "3aab20bfab732dbe456ffbe9ca03ba8a904b702f" }
-ratatui-gop = { git = "https://github.com/1vivy/forms", rev = "3aab20bfab732dbe456ffbe9ca03ba8a904b702f" }
-hii-uefi = { git = "https://github.com/1vivy/forms", rev = "3aab20bfab732dbe456ffbe9ca03ba8a904b702f" }
+forms-tui = { git = "https://github.com/1vivy/forms", rev = "8467fd047ac716179905e980dd582f17d83cc8df" }
+ratatui-gop = { git = "https://github.com/1vivy/forms", rev = "8467fd047ac716179905e980dd582f17d83cc8df" }
+hii-uefi = { git = "https://github.com/1vivy/forms", rev = "8467fd047ac716179905e980dd582f17d83cc8df" }
 ratatui-core = { version = "0.1.2", default-features = false }
 uefi = { version = "0.41.0", default-features = false }
 uefi-raw = "0.17.0"

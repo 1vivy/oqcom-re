@@ -51,8 +51,9 @@ so the lifecycle can execute the selected action.
 
 ## Markers
 
-The application writes these lines to the serial port. It also writes them to
-the console, except while the session draws on the screen:
+The application writes these lines to the serial port when firmware publishes
+`SerialIo`. Otherwise it uses the console and repaints any disturbed frame.
+With a separate serial sink, console markers stop while the session draws.
 
 | Marker | Meaning |
 | --- | --- |
